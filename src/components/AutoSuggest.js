@@ -82,7 +82,7 @@ class AutoSuggest extends Component {
        selectedResultId: this.state.results[index].artistId,
        showSuggestions: false
      });
-    const artist = this.props.results[index];
+    const artist = this.state.results[index];
     this.props.onSelect(artist);
   }
   render() {
@@ -94,6 +94,7 @@ class AutoSuggest extends Component {
             <div className='control'>
               <input
                 id='artist-search'
+                autoComplete='off'
                 onKeyPress={this.handleKeyPress}
                 onKeyUp={this.handleKeyUp}
                 value={this.state.input}

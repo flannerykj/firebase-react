@@ -34,17 +34,27 @@ class WorkForm extends Component {
     }
   }
   submitForm(e){
-    e.preventDefault(); // <- prevent form submit from reloading the page
-    var text = {
-      artistId: this.state.inputs.artistId,
-      artistName: this.state.inputs.artistName,
-      loc: this.state.inputs.loc,
-      description: this.state.inputs.description,
-      timestamp: Date.now()
-    }
-    this.props.workId?
+    e.preventDefault(); // <- prevent form submit from reloading the pagea
+    const auth = JSON.parse(localStorage.getItem('auth'));
+    if (auth) {
+      const profile = auth.additionalUserInfo.profile;
+
+      var text = {
+        artistId: this.state.inputs.artistId,
+        artistName: this.state.inputs.artistName,
+        loc: this.state.inputs.loc,
+        description: this.state.inputs.description,
+        timestamp: Date.now(),
+        userName: profile.given_name,
+        userId: auth.user.uid
+      }
+      this.props.workId?
       this.props.onSubmit({id: this.props.workId, text: text}):
-      this.props.onSubmit(text);
+        this.props.onSubmit(text);
+    }
+    else {
+      alert('Must be logged in to submit a work');
+    }
    this.props.onClose();
   }
   handleCancel(evt) {

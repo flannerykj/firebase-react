@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import {
   BrowserRouter as Router,
   Route,
-  Switch
+  Switch,
+  Redirect
 } from 'react-router-dom';
 
 import {fire, signIn, getToken} from './fire';
@@ -12,6 +13,8 @@ import Header from './components/Header';
 import ArtistForm from './components/ArtistForm';
 import ToggleableWorkForm from './components/ToggleableWorkForm';
 import WorkList from './components/WorkList';
+import ArtistList from './components/ArtistList';
+import ProfileInfo from './components/ProfileInfo';
 
 
 class App extends Component {
@@ -39,7 +42,12 @@ class App extends Component {
       let artist = { text: snapshot.val(), id: snapshot.key };
       this.setState({ artists: [artist].concat(this.state.artists) });
     })
-
+  }
+  componentDidMount() {
+    const auth = localStorage.getItem('auth');
+    if (auth) {
+      this.setSignIn(JSON.parse(auth));
+    }
   }
   toggleForm() {
     this.setState({
@@ -80,31 +88,49 @@ class App extends Component {
   addArtist(newArtist) {
     fire.database().ref('artists').push( newArtist );
   }
+  setSignIn = (info) => {
+    console.log(info);
+    this.setState({
+      signedIn: true,
+      profile: info.additionalUserInfo.profile,
+      credential: info.credential
+    });
+    localStorage.setItem('auth', JSON.stringify(info));
+  }
   handleSignIn = () => {
-    signIn().then(
-      this.setState({
-        signedIn: true
-      })
-    );
+    signIn(this.setSignIn);
+  }
+  handleLogOut = () => {
+    localStorage.clear();
+    this.setState({
+      signedIn: false,
+      profile: null,
+      credentials: null
+    });
   }
   render() {
     return (
       <Router>
       <div className='app'>
         <Header
-          handleSignIn={this.handleSignIn}/>
+          handleSignIn={this.handleSignIn}
+          isSignedIn={this.state.signedIn}
+          profile={this.state.profile}
+          handleLogOut={this.handleLogOut}/>
           <div className='container'>
             <Switch>
-              <Route exact path='/' >
+              <Route exact path="/" render={() =>
+                  <Redirect to="/works"/>
+              }/>
+              <Route exact path='/works' >
                 <div>
                   <section className='section'>
-                    <ToggleableWorkForm
+                    {(this.state.signedIn==true)?<ToggleableWorkForm
                       isOpen={this.state.isFormOpen}
                       artists={this.state.artists}
                       onToggle={this.toggleForm}
-                      addWork={this.addWork} />
-                  </section>
-                  <section className='section'>
+                      addWork={this.addWork} />:"Sign in to add a work"}
+                    <br/><br/>
                     <WorkList
                       artists={this.state.artists}
                       updateWork={this.updateWork}
@@ -116,21 +142,23 @@ class App extends Component {
               <Route exact path='/artists'>
                 <div>
                   <section className='section'>
-                    <h1>Add New Artist</h1>
+                    <h1 className='title'>Add New Artist</h1>
                     <ArtistForm
                       onSubmit={this.addArtist}/>
                   </section>
                   <section className='section'>
-                    <h1>Artists</h1>
-                    <ul>
-                    {this.state.artists.map((artist) => {
-                    return(
-                    <li key={artist.id}>{artist.text.name}</li>
-                    )})}
-                  </ul>
-                                      </section>
+                    <ArtistList artists={this.state.artists} />
+                  </section>
                 </div>
-            </Route>
+              </Route>
+              <Route exact path="/profile">
+                {(this.state.signedIn==true)?
+                  <section className='section'>
+                    <ProfileInfo profile={this.state.profile}/>
+                  </section>:
+                    <div>Sign In to view profile</div>}
+              </Route>
+
           </Switch>
         </div>
     </div>

@@ -70,9 +70,6 @@ class ArtistForm extends Component {
                 <div className="control">
                   {submitButton}
                 </div>
-                <div className="control">
-                  <button onClick={this.handleCancel} className="button is-link">Cancel</button>
-                </div>
               </div>
             </form>
           </div>
