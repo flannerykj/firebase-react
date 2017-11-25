@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "react-e4ea1"
+    "default": "react-e4ea1",
+    "production": "react-e4ea1"
   }
 }
